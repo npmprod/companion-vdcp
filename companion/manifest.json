@@ -1,0 +1,26 @@
+{
+	"id": "companion-module-npm-vdcp",
+	"name": "NPM VDCP",
+	"shortname": "npm-vdcp",
+	"description": "Control video servers via VDCP over IP (Omneon, Tria, K2, EVS, and more)",
+	"version": "0.1.0",
+	"license": "MIT",
+	"repository": "https://github.com/npmprod/companion-vdcp.git",
+	"bugs": "",
+	"manufacturer": "NPM",
+	"products": ["Harmonic Omneon Spectrum", "Harmonic Tria", "Grass Valley K2", "EVS XT/XS", "Avid AirSpeed"],
+	"keywords": ["VDCP", "Video Server", "Timecode", "Omneon", "Tria"],
+	"maintainers": [
+		{
+			"name": "NPM",
+			"email": "noreply@npcc.org"
+		}
+	],
+	"legacyIds": [],
+	"runtime": {
+		"type": "node18",
+		"api": "nodejs-ipc",
+		"apiVersion": "1.0.0",
+		"entrypoint": "../src/main.js"
+	}
+}

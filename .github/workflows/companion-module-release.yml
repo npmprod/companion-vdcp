@@ -1,0 +1,84 @@
+name: Companion Module CI
+
+on:
+  push:
+    tags:
+      - 'companion-v*'
+    branches:
+      - master
+    paths:
+      - 'src/**'
+      - 'companion/**'
+      - 'package.json'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'companion/**'
+      - 'package.json'
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    name: Validate Package Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: node test/e2e.js
+
+      - name: Create Companion-compatible package
+        run: bash scripts/package-for-companion.sh
+
+      - name: Verify package created
+        run: ls -lh *.tgz
+
+  release:
+    name: Create Release
+    needs: validate
+    if: startsWith(github.ref, 'refs/tags/companion-v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create Companion-compatible package
+        run: bash scripts/package-for-companion.sh
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: '*.tgz'
+          generate_release_notes: true
+          body: |
+            ## Installation Instructions
+
+            1. Download the `.tgz` file below
+            2. Open your Companion web interface
+            3. Click "Import Offline Module Package"
+            4. Select the downloaded file
+            5. Upload and install
+
+            ## VDCP Video Server Module
+            This release packages the Companion module for controlling video servers via VDCP over IP.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
