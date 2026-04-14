@@ -49,7 +49,7 @@ All multi-byte values are BCD encoded (e.g. 0x25 = decimal 25).
 
 **Checksum**: sum of all preceding bytes, masked to 8 bits (`& 0xFF`).
 
-Compatible servers include Harmonic Omneon Spectrum, Grass Valley K2, EVS XT/XS, Avid AirSpeed, and Imagine Communications.
+Compatible servers include Harmonic Omneon Spectrum, Harmonic Tria, Grass Valley K2, EVS XT/XS, Avid AirSpeed, and Imagine Communications.
 
 ## Key decisions
 

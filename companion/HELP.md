@@ -1,6 +1,6 @@
 ## VDCP Video Server Control
 
-This module controls video servers that support the VDCP (Video Disk Control Protocol) over IP. Compatible servers include Harmonic Omneon Spectrum, Grass Valley K2, EVS XT/XS, Avid AirSpeed, and Imagine Communications.
+This module controls video servers that support the VDCP (Video Disk Control Protocol) over IP. Compatible servers include Harmonic Omneon Spectrum, Harmonic Tria, Grass Valley K2, EVS XT/XS, Avid AirSpeed, and Imagine Communications.
 
 ### Configuration
 

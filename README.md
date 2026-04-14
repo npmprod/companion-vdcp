@@ -38,7 +38,7 @@ Triggering and Slack notifications are handled by separate Companion modules.
 
 VDCP (Video Disk Control Protocol) is derived from Sony 9-pin (BVW) and typically exposed over TCP on port 8000 (Channel A) and 8001 (Channel B). All multi-byte values are BCD encoded.
 
-Compatible servers include Harmonic Omneon Spectrum, Grass Valley K2, EVS XT/XS, Avid AirSpeed, and Imagine Communications.
+Compatible servers include Harmonic Omneon Spectrum, Harmonic Tria, Grass Valley K2, EVS XT/XS, Avid AirSpeed, and Imagine Communications.
 
 ## Setup
 
