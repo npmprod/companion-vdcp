@@ -1,6 +1,5 @@
 const { VDCPEmulator } = require('./emulator')
 const { positionRequest, goToTimeCode } = require('../src/vdcp')
-const { parseFollowing } = require('../src/config')
 
 let passed = 0
 let failed = 0
@@ -18,57 +17,34 @@ function assert(label, actual, expected) {
 }
 
 async function run() {
-	const orig = new VDCPEmulator({ port: 9000, label: 'ORIG', hr: 1, min: 23, sec: 45, frame: 10, quiet: true })
-	const follow1 = new VDCPEmulator({ port: 9001, label: 'FOLLOW-1', quiet: true })
-	const follow2 = new VDCPEmulator({ port: 9002, label: 'FOLLOW-2', quiet: true })
-
-	await Promise.all([orig.start(), follow1.start(), follow2.start()])
-	console.log('')
+	const server = new VDCPEmulator({ port: 9000, label: 'SERVER', hr: 1, min: 23, sec: 45, frame: 10, quiet: true })
+	await server.start()
 
 	// --- Test 1: Position Request ---
 	console.log('Test: Position Request (read_tc)')
 	const tc = await positionRequest('127.0.0.1', 9000)
 	assert('returns correct timecode', tc, '01:23:45:10')
 
-	// --- Test 2: GoToTimeCode single target ---
-	console.log('\nTest: GoToTimeCode (single target)')
-	await goToTimeCode('127.0.0.1', 9001, '01:23:45:10')
+	// --- Test 2: GoToTimeCode ---
+	console.log('\nTest: GoToTimeCode')
+	await goToTimeCode('127.0.0.1', 9000, '02:00:00:00')
 	await tick()
-	assert('follow-1 received cue', follow1.cuedTo, '01:23:45:10')
+	assert('server received cue', server.cuedTo, '02:00:00:00')
 
-	// --- Test 3: GoToTimeCode parallel targets ---
-	console.log('\nTest: GoToTimeCode (parallel targets)')
-	follow1.cuedTo = null
-	follow2.cuedTo = null
-	const targets = parseFollowing('127.0.0.1:9001, 127.0.0.1:9002')
-	await Promise.all(targets.map(({ host, port }) => goToTimeCode(host, port, '02:00:00:00')))
+	// --- Test 3: Updated timecode ---
+	console.log('\nTest: Read updated timecode')
+	server.setTimecode(0, 15, 30, 5)
+	const tc2 = await positionRequest('127.0.0.1', 9000)
+	assert('reads updated timecode', tc2, '00:15:30:05')
+
+	// --- Test 4: GoToTimeCode with read value ---
+	console.log('\nTest: GoToTimeCode with read value')
+	server.cuedTo = null
+	await goToTimeCode('127.0.0.1', 9000, tc2)
 	await tick()
-	assert('follow-1 received cue', follow1.cuedTo, '02:00:00:00')
-	assert('follow-2 received cue', follow2.cuedTo, '02:00:00:00')
+	assert('server cued to read TC', server.cuedTo, '00:15:30:05')
 
-	// --- Test 4: Full TP Sync flow ---
-	console.log('\nTest: TP Sync (read + cue all)')
-	follow1.cuedTo = null
-	follow2.cuedTo = null
-	orig.setTimecode(0, 15, 30, 5)
-	const readTc = await positionRequest('127.0.0.1', 9000)
-	assert('reads updated timecode', readTc, '00:15:30:05')
-	await Promise.all(targets.map(({ host, port }) => goToTimeCode(host, port, readTc)))
-	await tick()
-	assert('follow-1 cued to new TC', follow1.cuedTo, '00:15:30:05')
-	assert('follow-2 cued to new TC', follow2.cuedTo, '00:15:30:05')
-
-	// --- Test 5: parseFollowing ---
-	console.log('\nTest: parseFollowing config parser')
-	const parsed = parseFollowing('10.0.1.50:8000, 10.0.1.51:8001')
-	assert('parses first host', parsed[0].host, '10.0.1.50')
-	assert('parses first port', parsed[0].port, 8000)
-	assert('parses second host', parsed[1].host, '10.0.1.51')
-	assert('parses second port', parsed[1].port, 8001)
-	const empty = parseFollowing('')
-	assert('empty string returns empty array', empty.length, 0)
-
-	// --- Test 6: Error handling ---
+	// --- Test 5: Error handling ---
 	console.log('\nTest: Error handling')
 	try {
 		await positionRequest('127.0.0.1', 9999, 1000)
@@ -77,8 +53,15 @@ async function run() {
 		assert('connection refused throws', err.message.includes('Position Request'), true)
 	}
 
+	try {
+		await goToTimeCode('127.0.0.1', 9999, '01:00:00:00', 1000)
+		assert('GoToTimeCode connection refused throws', false, true)
+	} catch (err) {
+		assert('GoToTimeCode connection refused throws', err.message.includes('GoToTimeCode'), true)
+	}
+
 	// --- Summary ---
-	await Promise.all([orig.stop(), follow1.stop(), follow2.stop()])
+	await server.stop()
 	console.log(`\n${passed + failed} tests — ${passed} passed, ${failed} failed`)
 	process.exit(failed > 0 ? 1 : 0)
 }
