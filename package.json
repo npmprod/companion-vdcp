@@ -1,0 +1,20 @@
+{
+	"name": "companion-module-vdcp",
+	"version": "0.1.0",
+	"description": "Bitfocus Companion module for controlling video servers via VDCP over IP",
+	"main": "src/main.js",
+	"scripts": {
+		"lint": "eslint src/"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/npmprod/companion-vdcp.git"
+	},
+	"license": "MIT",
+	"dependencies": {
+		"@companion-module/base": "~1.14.1"
+	},
+	"devDependencies": {
+		"eslint": "^8.0.0"
+	}
+}
