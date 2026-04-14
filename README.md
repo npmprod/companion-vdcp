@@ -1,10 +1,10 @@
-# companion-module-harmonic-omneon
+# companion-module-vdcp
 
-Bitfocus Companion module for controlling Harmonic Omneon Spectrum video servers via VDCP over IP.
+Bitfocus Companion module for controlling video servers via VDCP over IP.
 
 ## Overview
 
-During live multi-campus church production, the TP (Title Package) video is recorded simultaneously on Omneon Spectrum servers at each campus. The TP plays just before the speaker takes the stage. When TP starts on the originating campus, an operator needs all other campuses to cue their Omneon to the same timecode so playback is synchronized. This module automates that workflow.
+During live multi-campus church production, the TP (Title Package) video is recorded simultaneously on video servers at each campus. The TP plays just before the speaker takes the stage. When TP starts on the originating campus, an operator needs all other campuses to cue their server to the same timecode so playback is synchronized. This module automates that workflow.
 
 ## How it works
 
@@ -22,23 +22,23 @@ Triggering and Slack notifications are handled by separate Companion modules.
 
 | Action | Description |
 |--------|-------------|
-| `tp_sync` | Reads TC from originating Omneon and cues all following campuses to that TC |
-| `read_tc` | Reads the current timecode from the originating Omneon |
+| `tp_sync` | Reads TC from originating server and cues all following campuses to that TC |
+| `read_tc` | Reads the current timecode from the originating server |
 | `goto_tc` | Sends a GoToTimeCode command to all following campuses |
 
 ## Configuration
 
 | Field | Description |
 |-------|-------------|
-| `orig_host` | IP address of the originating Omneon server |
+| `orig_host` | IP address of the originating server |
 | `orig_port` | VDCP port on the originating server (8000 = Channel A, 8001 = Channel B) |
-| `following` | Comma-separated list of `IP:port` pairs for following campus Omneons |
+| `following` | Comma-separated list of `IP:port` pairs for following campus servers |
 
 ## VDCP protocol
 
-VDCP (Video Disk Control Protocol) is derived from Sony 9-pin (BVW). Omneon Spectrum exposes it over TCP on port 8000 (Channel A) and 8001 (Channel B). All multi-byte values are BCD encoded.
+VDCP (Video Disk Control Protocol) is derived from Sony 9-pin (BVW) and typically exposed over TCP on port 8000 (Channel A) and 8001 (Channel B). All multi-byte values are BCD encoded.
 
-The protocol is widely supported beyond Omneon — Grass Valley K2, EVS XT/XS, Avid AirSpeed, and Imagine Communications servers all speak VDCP.
+Compatible servers include Harmonic Omneon Spectrum, Grass Valley K2, EVS XT/XS, Avid AirSpeed, and Imagine Communications.
 
 ## Setup
 
@@ -52,7 +52,7 @@ Requires [`@companion-module/base`](https://github.com/bitfocus/companion-module
 
 ```
 src/
-  main.js      — OmneonInstance (extends InstanceBase), entry point
+  main.js      — VDCPInstance (extends InstanceBase), entry point
   vdcp.js      — VDCP protocol logic (BCD encode/decode, TCP socket)
   actions.js   — Action definitions (tp_sync, read_tc, goto_tc)
   config.js    — Configuration field definitions
@@ -61,4 +61,4 @@ src/
 
 ## Status
 
-This module has not yet been tested against live Omneon hardware. VDCP command bytes follow the standard spec but should be verified against your specific firmware documentation before production use.
+This module has not yet been tested against live hardware. VDCP command bytes follow the standard spec but should be verified against your specific firmware documentation before production use.

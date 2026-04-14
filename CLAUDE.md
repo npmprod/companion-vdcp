@@ -1,10 +1,10 @@
-# companion-module-harmonic-omneon
+# companion-module-vdcp
 
-Bitfocus Companion module for controlling Harmonic Omneon Spectrum video servers via VDCP over IP.
+Bitfocus Companion module for controlling video servers via VDCP over IP.
 
 ## Purpose
 
-During live multi-campus church production, the TP (Title Package) video is recorded simultaneously on Omneon Spectrum servers at each campus. The TP plays just before the speaker takes the stage. When TP starts on the originating campus, an operator needs all other campuses to cue their Omneon to the same timecode so playback is synchronized. This module automates that workflow.
+During live multi-campus church production, the TP (Title Package) video is recorded simultaneously on video servers at each campus. The TP plays just before the speaker takes the stage. When TP starts on the originating campus, an operator needs all other campuses to cue their server to the same timecode so playback is synchronized. This module automates that workflow.
 
 ## How it fits into the larger system
 
@@ -22,7 +22,7 @@ Triggering and Slack notifications are handled by separate Companion modules.
 
 ```
 src/
-  main.js      — OmneonInstance (extends InstanceBase), entry point, exposes last_tc variable
+  main.js      — VDCPInstance (extends InstanceBase), entry point, exposes last_tc variable
   vdcp.js      — All VDCP protocol logic (BCD encode/decode, TCP socket, Position Request, GoToTimeCode)
   actions.js   — Three actions: tp_sync, read_tc, goto_tc
   config.js    — Three config fields: orig_host, orig_port, following (comma-separated IP:port list)
@@ -33,7 +33,7 @@ companion/
 
 ## VDCP protocol details
 
-VDCP (Video Disk Control Protocol) is derived from Sony 9-pin (BVW). Omneon Spectrum exposes it over TCP:
+VDCP (Video Disk Control Protocol) is derived from Sony 9-pin (BVW). Typically exposed over TCP:
 - Channel A → port 8000
 - Channel B → port 8001
 
@@ -49,7 +49,7 @@ All multi-byte values are BCD encoded (e.g. 0x25 = decimal 25).
 
 **Checksum**: sum of all preceding bytes, masked to 8 bits (`& 0xFF`).
 
-VDCP is widely supported beyond Omneon — Grass Valley K2, EVS XT/XS, Avid AirSpeed, and Imagine Communications servers all speak the same protocol. The module is not Omneon-specific at the protocol level.
+Compatible servers include Harmonic Omneon Spectrum, Grass Valley K2, EVS XT/XS, Avid AirSpeed, and Imagine Communications.
 
 ## Key decisions
 
@@ -60,8 +60,8 @@ VDCP is widely supported beyond Omneon — Grass Valley K2, EVS XT/XS, Avid AirS
 
 ## What still needs field verification
 
-- VDCP command bytes (`0x61 0x20` for Position Request, `0x24 0x31` for GoToTimeCode) follow the standard VDCP spec — verify against your specific Omneon firmware's VDCP documentation before relying on these in production.
-- The module has not yet been tested against live Omneon hardware.
+- VDCP command bytes (`0x61 0x20` for Position Request, `0x24 0x31` for GoToTimeCode) follow the standard VDCP spec — verify against your specific firmware's VDCP documentation before relying on these in production.
+- The module has not yet been tested against live hardware.
 
 ## Running locally
 
