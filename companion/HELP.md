@@ -25,6 +25,6 @@ This module controls video servers that support the VDCP (Video Disk Control Pro
 ### Typical workflow
 
 1. Configure the originating server and following servers
-2. Trigger **TP Sync** via a RossTalk CC event or button press
+2. Trigger **TP Sync** via a button press or external trigger
 3. The module reads the current timecode and cues all following servers simultaneously
 4. Use `$(vdcp:last_tc)` in other modules (e.g. Slack notifications) as needed

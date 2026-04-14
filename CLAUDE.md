@@ -4,22 +4,19 @@ Bitfocus Companion module for controlling Harmonic Omneon Spectrum video servers
 
 ## Purpose
 
-During live multi-campus church production, the TP (Teaching Pastor) message is recorded simultaneously on Omneon Spectrum servers at each campus. When TP starts on the originating campus, an operator needs all other campuses to cue their Omneon to the same timecode so playback is synchronized. This module automates that workflow.
+During live multi-campus church production, the TP (Title Package) video is recorded simultaneously on Omneon Spectrum servers at each campus. The TP plays just before the speaker takes the stage. When TP starts on the originating campus, an operator needs all other campuses to cue their Omneon to the same timecode so playback is synchronized. This module automates that workflow.
 
 ## How it fits into the larger system
 
 ```
-Ross Switcher (plays TP)
-  └── RossTalk CC event (TCP port 7788)
-        └── Bitfocus Companion (native RossTalk listener)
-              └── TP Sync action (this module)
-                    ├── VDCP Position Request → originating Omneon → reads TC
-                    ├── Stores TC as $(omneon:last_tc) variable
-                    └── VDCP GoToTimeCode → all following Omneon campuses (parallel)
-
-Slack notification is handled by a separate Companion module that reads $(omneon:last_tc).
-Resi campuses (EC, DC) are cued separately via Companion's RossTalk module.
+Bitfocus Companion
+  └── TP Sync action (this module)
+        ├── VDCP Position Request → originating server → reads TC
+        ├── Stores TC as $(vdcp:last_tc) variable
+        └── VDCP GoToTimeCode → all following campus servers (parallel)
 ```
+
+Triggering and Slack notifications are handled by separate Companion modules.
 
 ## Architecture
 
@@ -56,7 +53,7 @@ VDCP is widely supported beyond Omneon — Grass Valley K2, EVS XT/XS, Avid AirS
 
 ## Key decisions
 
-- **No Slack in this module.** Slack is intentionally left to a separate Companion module. This module exposes `$(omneon:last_tc)` as a Companion variable so any downstream module (Slack, HTTP, etc.) can consume it on the same RossTalk trigger.
+- **No Slack in this module.** Slack is intentionally left to a separate Companion module. This module exposes `$(vdcp:last_tc)` as a Companion variable so any downstream module (Slack, HTTP, etc.) can consume it.
 - **Parallel GoToTimeCode.** All following campuses are cued simultaneously via `Promise.all`, not sequentially.
 - **Fire and forget for GoToTimeCode.** Per VDCP spec, Cue Up with Data has no response. The TCP connection is closed immediately after the command is sent.
 - **Per-campus error isolation.** A GoToTimeCode failure on one campus logs a warning but does not abort the others.

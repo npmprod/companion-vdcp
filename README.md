@@ -4,21 +4,19 @@ Bitfocus Companion module for controlling Harmonic Omneon Spectrum video servers
 
 ## Overview
 
-During live multi-campus church production, the Teaching Pastor (TP) message is recorded simultaneously on Omneon Spectrum servers at each campus. When TP starts on the originating campus, an operator needs all other campuses to cue their Omneon to the same timecode so playback is synchronized. This module automates that workflow.
+During live multi-campus church production, the TP (Title Package) video is recorded simultaneously on Omneon Spectrum servers at each campus. The TP plays just before the speaker takes the stage. When TP starts on the originating campus, an operator needs all other campuses to cue their Omneon to the same timecode so playback is synchronized. This module automates that workflow.
 
 ## How it works
 
 ```
-Ross Switcher (plays TP)
-  └── RossTalk CC event (TCP port 7788)
-        └── Bitfocus Companion (native RossTalk listener)
-              └── TP Sync action (this module)
-                    ├── VDCP Position Request → originating Omneon → reads TC
-                    ├── Stores TC as $(omneon:last_tc) variable
-                    └── VDCP GoToTimeCode → all following Omneon campuses (parallel)
+Bitfocus Companion
+  └── TP Sync action (this module)
+        ├── VDCP Position Request → originating server → reads TC
+        ├── Stores TC as $(vdcp:last_tc) variable
+        └── VDCP GoToTimeCode → all following campus servers (parallel)
 ```
 
-Slack notification is handled by a separate Companion module that reads `$(omneon:last_tc)`.
+Triggering and Slack notifications are handled by separate Companion modules.
 
 ## Actions
 
