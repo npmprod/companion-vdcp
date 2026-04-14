@@ -13,9 +13,14 @@ class VDCPEmulator {
 		this.sec = options.sec ?? 0
 		this.frame = options.frame ?? 0
 
+		this.quiet = options.quiet || false
 		this.running = false
 		this.server = null
 		this.cuedTo = null // last GoToTimeCode received
+	}
+
+	_log(msg) {
+		if (!this.quiet) this._log(msg)
 	}
 
 	/**
@@ -35,25 +40,25 @@ class VDCPEmulator {
 		return new Promise((resolve, reject) => {
 			this.server = net.createServer((socket) => {
 				const remote = `${socket.remoteAddress}:${socket.remotePort}`
-				console.log(`[${this.label}] Client connected: ${remote}`)
+				this._log(`[${this.label}] Client connected: ${remote}`)
 
 				socket.on('data', (data) => {
 					this._handlePacket(socket, data, remote)
 				})
 
 				socket.on('close', () => {
-					console.log(`[${this.label}] Client disconnected: ${remote}`)
+					this._log(`[${this.label}] Client disconnected: ${remote}`)
 				})
 
 				socket.on('error', (err) => {
-					console.log(`[${this.label}] Socket error from ${remote}: ${err.message}`)
+					this._log(`[${this.label}] Socket error from ${remote}: ${err.message}`)
 				})
 			})
 
 			this.server.listen(this.port, this.host, () => {
 				this.running = true
-				console.log(`[${this.label}] Emulator listening on ${this.host}:${this.port}`)
-				console.log(`[${this.label}] Current TC: ${this._formatTC()}`)
+				this._log(`[${this.label}] Emulator listening on ${this.host}:${this.port}`)
+				this._log(`[${this.label}] Current TC: ${this._formatTC()}`)
 				resolve()
 			})
 
@@ -69,7 +74,7 @@ class VDCPEmulator {
 			if (this.server) {
 				this.server.close(() => {
 					this.running = false
-					console.log(`[${this.label}] Emulator stopped`)
+					this._log(`[${this.label}] Emulator stopped`)
 					resolve()
 				})
 			} else {
@@ -80,7 +85,7 @@ class VDCPEmulator {
 
 	_handlePacket(socket, data, remote) {
 		if (data.length < 3) {
-			console.log(`[${this.label}] Ignoring short packet (${data.length} bytes) from ${remote}`)
+			this._log(`[${this.label}] Ignoring short packet (${data.length} bytes) from ${remote}`)
 			return
 		}
 
@@ -89,8 +94,8 @@ class VDCPEmulator {
 
 		// Position Request: 0x61 0x20 [checksum]
 		if (cmd1 === 0x61 && cmd2 === 0x20) {
-			console.log(`[${this.label}] ← Position Request from ${remote}`)
-			console.log(`[${this.label}] → Responding with TC: ${this._formatTC()}`)
+			this._log(`[${this.label}] ← Position Request from ${remote}`)
+			this._log(`[${this.label}] → Responding with TC: ${this._formatTC()}`)
 
 			const resp = [0x74, 0x20, toBCD(this.frame), toBCD(this.sec), toBCD(this.min), toBCD(this.hr)]
 			const packet = Buffer.from([...resp, checksum(resp)])
@@ -101,7 +106,7 @@ class VDCPEmulator {
 		// GoToTimeCode (Cue Up with Data): 0x24 0x31 [frame] [sec] [min] [hr] [checksum]
 		if (cmd1 === 0x24 && cmd2 === 0x31) {
 			if (data.length < 7) {
-				console.log(`[${this.label}] GoToTimeCode packet too short (${data.length} bytes) from ${remote}`)
+				this._log(`[${this.label}] GoToTimeCode packet too short (${data.length} bytes) from ${remote}`)
 				return
 			}
 
@@ -112,12 +117,12 @@ class VDCPEmulator {
 			const tc = `${String(hr).padStart(2, '0')}:${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}:${String(frame).padStart(2, '0')}`
 
 			this.cuedTo = tc
-			console.log(`[${this.label}] ← GoToTimeCode from ${remote}: ${tc}`)
-			console.log(`[${this.label}]   Cued to ${tc}`)
+			this._log(`[${this.label}] ← GoToTimeCode from ${remote}: ${tc}`)
+			this._log(`[${this.label}]   Cued to ${tc}`)
 			return
 		}
 
-		console.log(`[${this.label}] Unknown command 0x${cmd1.toString(16)} 0x${cmd2.toString(16)} from ${remote}`)
+		this._log(`[${this.label}] Unknown command 0x${cmd1.toString(16)} 0x${cmd2.toString(16)} from ${remote}`)
 	}
 
 	_formatTC() {

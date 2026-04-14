@@ -18,9 +18,9 @@ function assert(label, actual, expected) {
 }
 
 async function run() {
-	const orig = new VDCPEmulator({ port: 9000, label: 'ORIG', hr: 1, min: 23, sec: 45, frame: 10 })
-	const follow1 = new VDCPEmulator({ port: 9001, label: 'FOLLOW-1' })
-	const follow2 = new VDCPEmulator({ port: 9002, label: 'FOLLOW-2' })
+	const orig = new VDCPEmulator({ port: 9000, label: 'ORIG', hr: 1, min: 23, sec: 45, frame: 10, quiet: true })
+	const follow1 = new VDCPEmulator({ port: 9001, label: 'FOLLOW-1', quiet: true })
+	const follow2 = new VDCPEmulator({ port: 9002, label: 'FOLLOW-2', quiet: true })
 
 	await Promise.all([orig.start(), follow1.start(), follow2.start()])
 	console.log('')
