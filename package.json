@@ -4,6 +4,7 @@
 	"description": "Bitfocus Companion module for controlling video servers via VDCP over IP",
 	"main": "src/main.js",
 	"scripts": {
+		"test": "node test/e2e.js",
 		"lint": "eslint src/"
 	},
 	"repository": {
